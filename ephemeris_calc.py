@@ -1,4 +1,6 @@
 from skyfield.api import load
+SIGNS = ["Aries", "Taurus", "Gemini", "Cancer", "Leo", "Virgo", 
+         "Libra", "Scorpio", "Sagittarius", "Capricorn", "Aquarius", "Pisces"]
 
 def load_data():
     ts = load.timescale()
@@ -13,4 +15,12 @@ def ecliptic_longitude(eph,t,body_name):
     obs_loc = earth_time.observe(body)
     app_loc = obs_loc.apparent()
     lat,lon,dist = app_loc.ecliptic_latlon(epoch="date")
-    return lon.degrees
+    return float(lon.degrees)
+
+def zodiac_sign(longitude):
+    lon = longitude % 360
+    sign_position = int(lon // 30)
+    sign_degree = lon % 30
+
+    sign_dict = {"sign" : SIGNS[sign_position], "degree": sign_degree}
+    return sign_dict
