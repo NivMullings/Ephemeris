@@ -14,6 +14,9 @@ def load_data():
 
 
 def ecliptic_longitude(eph,t,body_name):
+    # takes the ephemeris, a time, and a body's name and returns
+    # that body's tropical ecliptic longitude in degrees
+    # as a plain float from 0 to 360
     earth = eph["earth"]
     body = eph[body_name]
     earth_time = earth.at(t)
@@ -23,6 +26,8 @@ def ecliptic_longitude(eph,t,body_name):
     return float(lon.degrees)
 
 def zodiac_sign(longitude):
+    # takes any number of degrees and returns a dict with two keys:
+    # "sign" (sign's name) and "degree" (how far into the sign 0-30)
     lon = longitude % 360
     sign_position = int(lon // 30)
     sign_degree = lon % 30
@@ -31,6 +36,8 @@ def zodiac_sign(longitude):
     return sign_dict
 
 def get_positions(t, eph):
+    # returns a list of ten dicts, one per body, each with the keys "name", 
+    # "longitude", "sign", and "degree", sorted by longitude
     result = []
     for display_name, eph_name in BODIES.items():
         body_lon = ecliptic_longitude(eph, t, eph_name)
@@ -40,3 +47,20 @@ def get_positions(t, eph):
         result.append(body_dict)
     by_lon = sorted(result, key=lambda p: p["longitude"])
     return by_lon
+
+def signed_difference(a, b):
+    # how far you turn, in the shortest way, to get from angle a to angle b
+    ret_angle = ((b - a) + 180) % 360 - 180
+    return ret_angle
+
+def is_retrograde(eph, t, body_name):
+    # uses def signed_difference to return True or False
+    if body_name == "sun" or body_name == "moon":
+        return False
+    lon_now = ecliptic_longitude(eph, t, body_name)
+    lon_tmw = ecliptic_longitude(eph, t + 1, body_name)
+    ret_diff = signed_difference(lon_now, lon_tmw)
+    if ret_diff < 0:
+        return True
+    else:
+        return False
